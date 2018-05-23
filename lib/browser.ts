@@ -1,7 +1,6 @@
 import {BPClient} from 'blocking-proxy';
 import {ActionSequence, By, Capabilities, Command as WdCommand, FileDetector, ICommandName, Options, promise as wdpromise, Session, TargetLocator, TouchSequence, until, WebDriver, WebElement, WebElementPromise} from 'selenium-webdriver';
 import * as url from 'url';
-import {extend as extendWD, ExtendedWebDriver} from 'webdriver-js-extender';
 
 import {DebugHelper} from './debugger';
 import {build$, build$$, ElementArrayFinder, ElementFinder} from './element';
@@ -35,13 +34,11 @@ for (let foo in require('selenium-webdriver')) {
 }
 
 
-// Explicitly define types for webdriver.WebDriver and ExtendedWebDriver.
+// Explicitly define types for webdriver.WebDriver.
 // We do this because we use composition over inheritance to implement polymorphism, and therefore
 // we don't want to inherit WebDriver's constructor.
 export class AbstractWebDriver {}
 export interface AbstractWebDriver extends WebDriver {}
-export class AbstractExtendedWebDriver extends AbstractWebDriver {}
-export interface AbstractExtendedWebDriver extends ExtendedWebDriver {}
 
 /**
  * Mix a function from one object onto another. The function will still be
@@ -102,7 +99,7 @@ function buildElementHelper(browser: ProtractorBrowser): ElementHelper {
 /**
  * @alias browser
  * @constructor
- * @extends {webdriver_extensions.ExtendedWebDriver}
+ * @extends {AbstractWebDriver}
  * @param {webdriver.WebDriver} webdriver
  * @param {string=} opt_baseUrl A base URL to run get requests against.
  * @param {string|webdriver.promise.Promise<string>=} opt_rootElement  Selector element that has an
@@ -110,7 +107,7 @@ function buildElementHelper(browser: ProtractorBrowser): ElementHelper {
  * @param {boolean=} opt_untrackOutstandingTimeouts Whether Protractor should
  *     stop tracking outstanding $timeouts.
  */
-export class ProtractorBrowser extends AbstractExtendedWebDriver {
+export class ProtractorBrowser extends AbstractWebDriver {
   /**
    * @type {ProtractorBy}
    */
@@ -125,9 +122,9 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
    * The wrapped webdriver instance. Use this to interact with pages that do
    * not contain Angular (such as a log-in screen).
    *
-   * @type {webdriver_extensions.ExtendedWebDriver}
+   * @type {WebDriver}
    */
-  driver: ExtendedWebDriver;
+  driver: WebDriver;
 
   /**
    * The client used to control the BlockingProxy. If unset, BlockingProxy is
@@ -332,27 +329,19 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
     // wait for Angular to sync up before performing the action. This does not
     // include functions which are overridden by protractor below.
     let methodsToSync = ['getCurrentUrl', 'getPageSource', 'getTitle'];
-    let extendWDInstance: ExtendedWebDriver;
-    try {
-      extendWDInstance = extendWD(webdriverInstance);
-    } catch (e) {
-      // Probably not a driver that can be extended (e.g. gotten using
-      // `directConnect: true` in the config)
-      extendWDInstance = webdriverInstance as ExtendedWebDriver;
-    }
 
     // Mix all other driver functionality into Protractor.
     Object.getOwnPropertyNames(WebDriver.prototype).forEach(method => {
-      if (!this[method] && typeof(extendWDInstance as any)[method] === 'function') {
+      if (!this[method] && typeof(webdriverInstance as any)[method] === 'function') {
         if (methodsToSync.indexOf(method) !== -1) {
-          ptorMixin(this, extendWDInstance, method, this.waitForAngular.bind(this));
+          ptorMixin(this, webdriverInstance, method, this.waitForAngular.bind(this));
         } else {
-          ptorMixin(this, extendWDInstance, method);
+          ptorMixin(this, webdriverInstance, method);
         }
       }
     });
 
-    this.driver = extendWDInstance;
+    this.driver = webdriverInstance;
     if (opt_blockingProxyUrl) {
       logger.info('Starting BP client for ' + opt_blockingProxyUrl);
       this.bpClient = new BPClient(opt_blockingProxyUrl);

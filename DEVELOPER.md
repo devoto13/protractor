@@ -75,7 +75,7 @@ Most of the code is written in TypeScript, with the exception of a few js files.
 `lib/debugger` is for element explorer, `browser.pause` and `browser.explore`.
 `lib/driverProviders` controls how WebDriver instances are created.
 `lib/frameworks` contains adapters for test frameworks such as Jasmine and Mocha.
-`lib/selenium-webdriver` and `lib/webdriver-js-extender` are used ONLY for API documentation generation.
+`lib/selenium-webdriver` is used ONLY for API documentation generation.
 
 ## Lightning Code Walkthrough
 
@@ -124,9 +124,6 @@ all logic to wait for Angular will be handled through the blocking proxy.
 the various binaries necessary for running webdriver tests. These binaries include
 specific drivers for various browsers (e.g. chromedriver) and the selenium standalone
 server. [webdriver-manager](https://github.com/angular/webdriver-manager)
-
-`webdriver-js-extender` extends selenium-webdriver to add Appium commands.
-[webdriver-js-extender](https://github.com/angular/webdriver-js-extender)
 
 ## Continuous Integration
 

@@ -195,9 +195,7 @@ exports.config = {
 Using `wd` and `wd-bridge`
 -------------------------------------
 
-As of version 5.1.0, Protractor uses `webdriver-js-extender` to provide all the
-mobile commands you should need (see the API page for details).  However, if you
-prefer `wd`, you can access it via `wd-bridge`.  First, install both `wd` and
+First, install both `wd` and
 `wd-bridge` as `devDependencies`:
 
 ```shell
